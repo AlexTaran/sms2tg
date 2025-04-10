@@ -33,11 +33,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var buttonOpenSettings: Button
 
     private lateinit var telegramUserIdText: TextView
-    private lateinit var telegramUserIdUpdate: Button
+    private lateinit var telegramUserIdUpdateButton: Button
+    private lateinit var telegramOpenUserInfoBotButton: Button
     private lateinit var telegramTokenText: TextView
-    private lateinit var telegramTokenUpdate: Button
-    private lateinit var telegramTestButton: Button
+    private lateinit var telegramTokenUpdateButton: Button
     private lateinit var telegramOpenBotFatherButton: Button
+    private lateinit var telegramTestButton: Button
     private lateinit var smsWorkerTestButton: Button
 
     private val telegramDataAccessor = TelegramDataAccessor(this)
@@ -54,11 +55,12 @@ class MainActivity : AppCompatActivity() {
         )
         buttonOpenSettings = findViewById(R.id.button_open_settings)
         telegramUserIdText = findViewById(R.id.telegram_user_id_text)
-        telegramUserIdUpdate = findViewById(R.id.telegram_user_id_update)
+        telegramUserIdUpdateButton = findViewById(R.id.telegram_user_id_update_button)
+        telegramOpenUserInfoBotButton = findViewById(R.id.telegram_open_user_info_bot_button)
         telegramTokenText = findViewById(R.id.telegram_token_text)
-        telegramTokenUpdate = findViewById(R.id.telegram_token_update)
-        telegramTestButton = findViewById(R.id.telegram_test_button)
+        telegramTokenUpdateButton = findViewById(R.id.telegram_token_update_button)
         telegramOpenBotFatherButton = findViewById(R.id.telegram_open_bot_father_button)
+        telegramTestButton = findViewById(R.id.telegram_test_button)
         smsWorkerTestButton = findViewById(R.id.sms_worker_test_button)
 
         buttonOpenSettings.setOnClickListener {
@@ -67,14 +69,14 @@ class MainActivity : AppCompatActivity() {
             })
         }
 
-        telegramUserIdUpdate.setOnClickListener {
+        telegramUserIdUpdateButton.setOnClickListener {
             showTextInputDialog("Telegram User ID") {text ->
                 telegramDataAccessor.updateTelegramUserId(text)
                 updateTelegramDataStatus()
             }
         }
 
-        telegramTokenUpdate.setOnClickListener {
+        telegramTokenUpdateButton.setOnClickListener {
             showTextInputDialog("Telegram Token") {text ->
                 telegramDataAccessor.updateTelegramToken(text)
                 updateTelegramDataStatus()
@@ -91,6 +93,12 @@ class MainActivity : AppCompatActivity() {
         telegramOpenBotFatherButton.setOnClickListener {
             val intent = Intent(Intent.ACTION_VIEW)
             intent.data = Uri.parse("https://t.me/BotFather")
+            startActivity(intent)
+        }
+
+        telegramOpenUserInfoBotButton.setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.data = Uri.parse("https://t.me/userinfobot")
             startActivity(intent)
         }
 

@@ -34,7 +34,7 @@
             android:layout_height="1dp"
             android:layout_weight="1"/>
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/telegram_user_id_update"
+            android:id="@+id/telegram_user_id_update_button"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_gravity="end"
@@ -49,6 +49,13 @@
             app:iconPadding="0dp"
             app:icon="@drawable/baseline_add_24" />
     </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/telegram_open_user_info_bot_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Open @userinfobot"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -72,7 +79,7 @@
             android:layout_height="1dp"
             android:layout_weight="1"/>
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/telegram_token_update"
+            android:id="@+id/telegram_token_update_button"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_gravity="end"
@@ -89,16 +96,16 @@
     </LinearLayout>
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/telegram_test_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="Test Telegram"/>
-
-    <com.google.android.material.button.MaterialButton
         android:id="@+id/telegram_open_bot_father_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:text="Open @BotFather"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/telegram_test_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Test Telegram"/>
 </LinearLayout>
