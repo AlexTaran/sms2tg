@@ -4,18 +4,26 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.TypedArray
+import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
+import android.util.Log
+import android.util.TypedValue
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.view.menu.MenuBuilder
+import androidx.appcompat.widget.Toolbar
 import androidx.work.WorkManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
@@ -26,8 +34,10 @@ import okhttp3.Response
 import java.io.IOException
 import java.time.LocalDateTime
 
+
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var mainToolbar: Toolbar
     private lateinit var batteryOptimizationStatus: TextView
     private lateinit var permissionStatus: Map<String, TextView> // permission -> status
     private lateinit var buttonOpenSettings: Button
@@ -47,6 +57,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        mainToolbar = findViewById(R.id.main_toolbar)
+        setSupportActionBar(mainToolbar)
         batteryOptimizationStatus = findViewById(R.id.battery_optimization_status)
         permissionStatus = mapOf<String, TextView>(
             Manifest.permission.RECEIVE_SMS to findViewById(R.id.permission_sms_status),
@@ -246,6 +258,47 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton("OK") {_, _ -> }
             .create()
         dialog.show()
+    }
+
+    private fun showLicenseDialog() {
+        val dialogView = LayoutInflater.from(this@MainActivity).inflate(R.layout.dialog_license, null)
+        dialogView.findViewById<TextView>(R.id.dialog_license_copyright_notice).text = getString(R.string.copyright_notice, LocalDateTime.now().year)
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle("License")
+            .setView(dialogView)
+            .setPositiveButton("OK") {_, _ -> }
+            .create()
+        dialog.show()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.main_toolbar_menu, menu)
+        if (menu is MenuBuilder) {
+            menu.setOptionalIconsVisible(true)
+        }
+        val textPrimaryColor = TypedValue().let {
+            theme.resolveAttribute(android.R.attr.textColorPrimary, it, true)
+            obtainStyledAttributes(
+                it.data, intArrayOf(
+                    android.R.attr.textColorPrimary
+                )
+            ).getColor(0, -1)
+        }
+        if (menu != null) {
+            for (i in 0 until menu.size()) {
+                menu.getItem(i).icon?.setTint(textPrimaryColor)
+            }
+        }
+
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.menu_action_license) {
+            showLicenseDialog()
+            return true
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     companion object {

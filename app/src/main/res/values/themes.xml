@@ -3,6 +3,14 @@
     <style name="Base.Theme.SMS2TG" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="android:actionOverflowButtonStyle">@style/OverflowButtonStyle</item>
+
+
+    </style>
+
+    <style name="OverflowButtonStyle" parent="Widget.AppCompat.ActionButton.Overflow">
+        <item name="android:src">@drawable/baseline_menu_24</item>
+        <item name="android:tint">?android:textColorPrimary</item>
     </style>
 
     <style name="Theme.SMS2TG" parent="Base.Theme.SMS2TG" />

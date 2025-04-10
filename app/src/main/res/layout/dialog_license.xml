@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textStyle="bold"
+            android:text="MIT License"/>
+
+        <TextView
+            android:id="@+id/dialog_license_copyright_notice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dialog_license_paragraph_margin"
+            android:textAppearance="?attr/textAppearanceBodyMedium" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dialog_license_paragraph_margin"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:text="@string/mit_license_paragraph_1"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dialog_license_paragraph_margin"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:text="@string/mit_license_paragraph_2"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dialog_license_paragraph_margin"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:text="@string/mit_license_paragraph_3"/>
+    </LinearLayout>
+</ScrollView>
