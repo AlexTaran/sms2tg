@@ -1,46 +1,30 @@
 package net.alextaran.sms2tg
 
-import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
 import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.inputmethodservice.InputMethodService
 import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
-import android.telephony.SubscriptionManager
-import android.telephony.TelephonyManager
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.getSystemService
-import androidx.work.Constraints
-import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequestBuilder
+import androidx.appcompat.app.AppCompatActivity
 import androidx.work.WorkManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import okhttp3.Call
 import okhttp3.Callback
-import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
-import org.json.JSONObject
 import java.io.IOException
-import java.time.Instant
 import java.time.LocalDateTime
-import java.time.ZoneId
 
 class MainActivity : AppCompatActivity() {
 
@@ -53,6 +37,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var telegramTokenText: TextView
     private lateinit var telegramTokenUpdate: Button
     private lateinit var telegramTestButton: Button
+    private lateinit var telegramOpenBotFatherButton: Button
     private lateinit var smsWorkerTestButton: Button
 
     private val telegramDataAccessor = TelegramDataAccessor(this)
@@ -73,6 +58,7 @@ class MainActivity : AppCompatActivity() {
         telegramTokenText = findViewById(R.id.telegram_token_text)
         telegramTokenUpdate = findViewById(R.id.telegram_token_update)
         telegramTestButton = findViewById(R.id.telegram_test_button)
+        telegramOpenBotFatherButton = findViewById(R.id.telegram_open_bot_father_button)
         smsWorkerTestButton = findViewById(R.id.sms_worker_test_button)
 
         buttonOpenSettings.setOnClickListener {
@@ -100,6 +86,12 @@ class MainActivity : AppCompatActivity() {
             sendTelegramTestMessage {
                 telegramTestButton.isEnabled = true
             }
+        }
+
+        telegramOpenBotFatherButton.setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.data = Uri.parse("https://t.me/BotFather")
+            startActivity(intent)
         }
 
         smsWorkerTestButton.setOnClickListener {
