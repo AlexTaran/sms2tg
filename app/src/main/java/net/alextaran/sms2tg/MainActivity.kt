@@ -41,6 +41,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var batteryOptimizationStatus: TextView
     private lateinit var permissionStatus: Map<String, TextView> // permission -> status
     private lateinit var buttonOpenSettings: Button
+    private lateinit var buttonRecreateActivity: Button
 
     private lateinit var telegramUserIdText: TextView
     private lateinit var telegramUserIdUpdateButton: Button
@@ -66,6 +67,7 @@ class MainActivity : AppCompatActivity() {
             Manifest.permission.READ_PHONE_NUMBERS to findViewById(R.id.permission_read_phone_numbers_status),
         )
         buttonOpenSettings = findViewById(R.id.button_open_settings)
+        buttonRecreateActivity = findViewById(R.id.button_recreate_activity)
         telegramUserIdText = findViewById(R.id.telegram_user_id_text)
         telegramUserIdUpdateButton = findViewById(R.id.telegram_user_id_update_button)
         telegramOpenUserInfoBotButton = findViewById(R.id.telegram_open_user_info_bot_button)
@@ -80,6 +82,7 @@ class MainActivity : AppCompatActivity() {
                 data = Uri.fromParts("package", packageName, null)
             })
         }
+        buttonRecreateActivity.setOnClickListener { recreate() }
 
         telegramUserIdUpdateButton.setOnClickListener {
             showTextInputDialog("Telegram User ID") {text ->
