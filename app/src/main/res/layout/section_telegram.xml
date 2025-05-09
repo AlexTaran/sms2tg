@@ -17,6 +17,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:layout_marginTop="24dp"
         android:gravity="center_vertical">
         <TextView
             android:layout_width="wrap_content"
@@ -54,13 +55,13 @@
         android:id="@+id/telegram_open_user_info_bot_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="12dp"
         android:text="Open @userinfobot"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="12dp"
         android:orientation="horizontal"
         android:gravity="center_vertical">
         <TextView
@@ -99,13 +100,28 @@
         android:id="@+id/telegram_open_bot_father_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="12dp"
         android:text="Open @BotFather"/>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/telegram_test_button"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="Test Telegram"/>
+        android:orientation="horizontal"
+        android:layout_marginTop="24dp">
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/telegram_test_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Test Telegram"/>
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1"/>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/sms_worker_test_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Test SMS worker"/>
+    </LinearLayout>
+
 </LinearLayout>

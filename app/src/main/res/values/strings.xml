@@ -4,4 +4,22 @@
     <string name="mit_license_paragraph_1">Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</string>
     <string name="mit_license_paragraph_2">The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</string>
     <string name="mit_license_paragraph_3">THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</string>
+
+    <string name="not_enough_permissions_dialog_title">Not enough permissions</string>
+    <string name="not_enough_permissions_dialog_description">Please ensure all permissions are granted and battery optimization is disabled.</string>
+
+    <string name="manage_app_if_unused_dialog_title">SMS forwarding turned ON</string>
+    <string name="manage_app_if_unused_dialog_description">Please ensure that automatic permission management turned OFF in Application settings. Check something like \"Manage app if unused\" and turn it off. Otherwise the App can work unstable.</string>
+
+    <string name="tutorial_dialog_title">SMS -> Telegram forwarder</string>
+    <string name="tutorial_dialog_description">
+This application is intended to forward incoming SMS messages to a Telegram bot.
+\n\nIt may be useful to receive SMS messages from a rarely used sim-card which you don\'t want to keep with you all the time.
+\n\nYou can install it on an unused device at home, connected to the internet.
+\n\nTo setup correctly you need to set Telegram User ID (may be acquired via a special bot) and your Bot ID (you need to create it via @BotFather)
+and copy Bot\'s secret key to a corresponding field.
+\n\nYou should also send any message first to a bot from your Telegram account because bots can not send messages to users first.
+\n\nTo verify everything is set up correctly check that both \"Test\" buttons are sending something to your Telegram account via Bot.
+\n\nThis app\'s source code is published under open-source license, so you can verify it does not do anything else than described above.
+    </string>
 </resources>

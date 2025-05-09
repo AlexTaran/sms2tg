@@ -6,4 +6,20 @@
         android:title="License"
         android:icon="@drawable/baseline_article_24"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_action_source_code"
+        android:title="Source Code"
+        android:icon="@drawable/baseline_code_24"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_action_report_problem"
+        android:title="Report a problem"
+        android:icon="@drawable/baseline_report_problem_24"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_action_tutorial"
+        android:title="About"
+        android:icon="@drawable/baseline_question_mark_24"
+        app:showAsAction="never" />
 </menu>

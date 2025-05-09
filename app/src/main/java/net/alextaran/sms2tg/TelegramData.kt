@@ -10,7 +10,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.time.LocalDateTime
 
-data class TelegramData(val userId: String, val token: String) {
+data class TelegramData(val userId: String, val token: String, val enabled: Boolean) {
     fun isValid(): Boolean {
         if (userId.isEmpty() || token.isEmpty()) {
             return false
@@ -60,32 +60,41 @@ class TelegramDataAccessor(private val ctx: Context) {
         val prefs = getPrefs()
         val userId = prefs.getString(USERID_KEY, "") ?: ""
         val token = prefs.getString(TOKEN_KEY, "") ?: ""
-        return TelegramData(userId, token)
+        val enabled = prefs.getBoolean(ENABLED_KEY, false)
+        return TelegramData(userId, token, enabled)
     }
 
     fun updateTelegramUserId(value: String) {
-        val prefs = getPrefs()
-        val editor = prefs.edit()
+        val editor = getPrefs().edit()
         editor.putString(USERID_KEY, value)
         editor.apply()
     }
 
     fun updateTelegramToken(value: String) {
-        val prefs = getPrefs()
-        val editor = prefs.edit()
+        val editor = getPrefs().edit()
         editor.putString(TOKEN_KEY, value)
+        editor.apply()
+    }
+
+    fun updateEnabledFlag(value: Boolean) {
+        val editor = getPrefs().edit()
+        editor.putBoolean(ENABLED_KEY, value)
         editor.apply()
     }
 
     private fun getPrefs(): SharedPreferences {
         val masterKey = MasterKey.Builder(ctx).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
-        val prefs = EncryptedSharedPreferences.create(ctx, FILENAME, masterKey, EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM)
-        return prefs
+        return EncryptedSharedPreferences.create(
+            ctx, FILENAME, masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
     }
 
     companion object {
         private const val FILENAME = "tg_data"
         private const val USERID_KEY = "user_id"
         private const val TOKEN_KEY = "token"
+        private const val ENABLED_KEY = "enabled"
     }
 }

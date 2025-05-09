@@ -1,17 +1,15 @@
 package net.alextaran.sms2tg
 
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.content.res.TypedArray
-import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
-import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.Menu
@@ -40,6 +38,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mainToolbar: Toolbar
     private lateinit var batteryOptimizationStatus: TextView
     private lateinit var permissionStatus: Map<String, TextView> // permission -> status
+    private lateinit var receiverStatusText: TextView
+    private lateinit var buttonSwitchReceiverStatus: Button
+    private lateinit var buttonShowTutorial: Button
     private lateinit var buttonOpenSettings: Button
     private lateinit var buttonRecreateActivity: Button
 
@@ -66,6 +67,9 @@ class MainActivity : AppCompatActivity() {
             Manifest.permission.READ_PHONE_STATE to findViewById(R.id.permission_read_phone_state_status),
             Manifest.permission.READ_PHONE_NUMBERS to findViewById(R.id.permission_read_phone_numbers_status),
         )
+        receiverStatusText = findViewById(R.id.receiver_status_text)
+        buttonSwitchReceiverStatus = findViewById(R.id.button_switch_receiver_status)
+        buttonShowTutorial = findViewById(R.id.button_show_tutorial)
         buttonOpenSettings = findViewById(R.id.button_open_settings)
         buttonRecreateActivity = findViewById(R.id.button_recreate_activity)
         telegramUserIdText = findViewById(R.id.telegram_user_id_text)
@@ -77,10 +81,29 @@ class MainActivity : AppCompatActivity() {
         telegramTestButton = findViewById(R.id.telegram_test_button)
         smsWorkerTestButton = findViewById(R.id.sms_worker_test_button)
 
+        buttonSwitchReceiverStatus.setOnClickListener {
+            val desiredStatus = !telegramDataAccessor.readTelegramData().enabled
+            if (desiredStatus) {
+                if (canEnable()) {
+                    telegramDataAccessor.updateEnabledFlag(true)
+                    showManageAppIfUnusedWarningDialog()
+                } else {
+                    showErrorDialog(getString(R.string.not_enough_permissions_dialog_title), getString(R.string.not_enough_permissions_dialog_description))
+                }
+            } else {
+                // Always can disable
+                telegramDataAccessor.updateEnabledFlag(false)
+            }
+
+            updateTelegramDataStatus()
+        }
+
+        buttonShowTutorial.setOnClickListener {
+            showTutorialDialog()
+        }
+
         buttonOpenSettings.setOnClickListener {
-            startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                data = Uri.fromParts("package", packageName, null)
-            })
+            openAppSettings()
         }
         buttonRecreateActivity.setOnClickListener { recreate() }
 
@@ -129,11 +152,20 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
+        if (!canEnable()) {
+            telegramDataAccessor.updateEnabledFlag(false)
+        }
+
         permissionStatus.forEach {(permission, status) ->
             status.text = if (checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) TEXT_GRANTED else TEXT_DENIED
         }
         updateTelegramDataStatus()
         updateBatteryOptimizationStatus()
+    }
+
+    private fun canEnable(): Boolean = areAllPermissionsGranted() && isBatteryOptimizationDisabled()
+    private fun areAllPermissionsGranted(): Boolean {
+        return permissionStatus.all { (permission, _) -> checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED }
     }
 
     private fun checkAndRequestPermissions(next: () -> Unit) {
@@ -173,14 +205,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateBatteryOptimizationStatus() {
+        batteryOptimizationStatus.text = if (isBatteryOptimizationDisabled()) TEXT_GRANTED else TEXT_DENIED
+    }
+
+    private fun isBatteryOptimizationDisabled(): Boolean {
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-        batteryOptimizationStatus.text = if (powerManager.isIgnoringBatteryOptimizations(packageName)) TEXT_GRANTED else TEXT_DENIED
+        return powerManager.isIgnoringBatteryOptimizations(packageName)
     }
 
     private fun updateTelegramDataStatus() {
         val tgData = telegramDataAccessor.readTelegramData()
         telegramUserIdText.text = tgData.getUserIdSafe()
         telegramTokenText.text = tgData.getTokenSafe()
+        receiverStatusText.text = if (tgData.enabled) "ON" else "OFF"
+        buttonSwitchReceiverStatus.text = if (tgData.enabled) "Disable" else "Enable"
     }
 
     private fun showTextInputDialog(title: String, handler: (text: String) -> Unit) {
@@ -248,7 +286,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun sendTestMessageViaWorker() {
-        val workReq = SmsWorker.createWorkRequest("*SMS 2 TG:* Worker test message at ${LocalDateTime.now().toString().escapeTgMarkdown()}")
+        val workReq = SmsWorker.createWorkRequest("*SMS 2 TG:* Worker test message on ${LocalDateTime.now().toString().escapeTgMarkdown()}")
         WorkManager.getInstance(this).enqueue(workReq)
     }
 
@@ -273,6 +311,51 @@ class MainActivity : AppCompatActivity() {
             .create()
         dialog.show()
     }
+
+    private fun showManageAppIfUnusedWarningDialog() {
+        val dialogView = LayoutInflater.from(this@MainActivity).inflate(R.layout.dialog_error, null)
+        dialogView.findViewById<TextView>(R.id.dialog_error_text).setText(R.string.manage_app_if_unused_dialog_description)
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.manage_app_if_unused_dialog_title)
+            .setView(dialogView)
+            .setPositiveButton("OK") {_, _ -> }
+            .setNegativeButton("Open App settings") { _, _ -> openAppSettings()}
+            .create()
+        dialog.show()
+    }
+
+    private fun showTutorialDialog() {
+        val dialogView = LayoutInflater.from(this@MainActivity).inflate(R.layout.dialog_error, null)
+        dialogView.findViewById<TextView>(R.id.dialog_error_text).setText(R.string.tutorial_dialog_description)
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.tutorial_dialog_title)
+            .setView(dialogView)
+            .setPositiveButton("OK") {_, _ -> }
+            .create()
+        dialog.show()
+    }
+
+    private fun openAppSettings() {
+        startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.fromParts("package", packageName, null)
+        })
+    }
+
+    private fun openLink(url: String) {
+        try {
+            val myIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            startActivity(myIntent)
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(
+                this, "No application can handle this request."
+                        + " Please install a browser", Toast.LENGTH_LONG
+            ).show()
+            e.printStackTrace()
+        }
+    }
+    private fun openAppSourceCode() = openLink("https://github.com/AlexTaran/sms2tg")
+
+    private fun openReportProblem() = openLink("https://github.com/AlexTaran/sms2tg/issues")
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.main_toolbar_menu, menu)
@@ -299,6 +382,18 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.menu_action_license) {
             showLicenseDialog()
+            return true
+        }
+        if (item.itemId == R.id.menu_action_source_code) {
+            openAppSourceCode()
+            return true
+        }
+        if (item.itemId == R.id.menu_action_report_problem) {
+            openReportProblem()
+            return true
+        }
+        if (item.itemId == R.id.menu_action_tutorial) {
+            showTutorialDialog()
             return true
         }
         return super.onOptionsItemSelected(item)

@@ -24,18 +24,15 @@
             android:paddingHorizontal="24dp"
             android:paddingVertical="12dp">
 
-            <include layout="@layout/permissions_section" />
-            <include layout="@layout/telegram_section"
+            <include layout="@layout/section_status" />
+            <include layout="@layout/section_permissions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"/>
+            <include layout="@layout/section_telegram"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/sms_worker_test_button"
-                android:layout_marginTop="24dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Test SMS worker"/>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

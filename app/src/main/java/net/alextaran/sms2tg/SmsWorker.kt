@@ -20,7 +20,7 @@ import java.time.LocalDateTime
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-class SmsWorker(val ctx: Context, val params: WorkerParameters) : CoroutineWorker(ctx, params) {
+class SmsWorker(private val ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
     override suspend fun doWork(): Result {
         Log.i(TAG, "doWork")
         val text = inputData.getString(DATA_KEY_TEXT)
@@ -29,6 +29,10 @@ class SmsWorker(val ctx: Context, val params: WorkerParameters) : CoroutineWorke
             return Result.failure()
         }
         val tgData = TelegramDataAccessor(ctx).readTelegramData()
+        if (!tgData.enabled) {
+            Log.i(TAG, "Forwarding to Telegram is turned off")
+            return Result.success()
+        }
         if (!tgData.isValid()) {
             Log.e(TAG, "Telegram data is invalid")
             return Result.failure()
@@ -37,19 +41,19 @@ class SmsWorker(val ctx: Context, val params: WorkerParameters) : CoroutineWorke
         val httpClient = OkHttpClient()
         val request = tgData.createSendMessageRequest(text)
 
-        try {
+        return try {
             val response = httpClient.newCall(request).await()
             val responseBody = response.body?.string()
             if (response.isSuccessful) {
-                Log.e(TAG, "Sent to TG successfully")
-                return Result.success()
+                Log.i(TAG, "Sent to TG successfully")
+                Result.success()
             } else {
-                Log.e(TAG, "Failure result: ${responseBody}")
-                return Result.failure()
+                Log.e(TAG, "Failure result: $responseBody")
+                Result.failure()
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error sending to TG", e)
-            return Result.failure()
+            Log.i(TAG, "Error sending to TG", e)
+            Result.failure()
         }
     }
 
