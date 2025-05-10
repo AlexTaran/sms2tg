@@ -78,6 +78,22 @@
     </LinearLayout>
 
     <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="12dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="POST_NOTIFICATIONS permission: "/>
+        <TextView
+            android:id="@+id/permission_post_notifications_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="(no data)"/>
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"

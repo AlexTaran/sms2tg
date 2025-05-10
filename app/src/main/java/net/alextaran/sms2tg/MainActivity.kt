@@ -1,6 +1,9 @@
 package net.alextaran.sms2tg
 
 import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -19,9 +22,12 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.appcompat.widget.Toolbar
+import androidx.core.app.NotificationCompat
+import androidx.core.content.getSystemService
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -62,6 +68,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        initializeNotificationChannel()
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.root_layout)) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -74,6 +81,7 @@ class MainActivity : AppCompatActivity() {
             Manifest.permission.RECEIVE_SMS to findViewById(R.id.permission_sms_status),
             Manifest.permission.READ_PHONE_STATE to findViewById(R.id.permission_read_phone_state_status),
             Manifest.permission.READ_PHONE_NUMBERS to findViewById(R.id.permission_read_phone_numbers_status),
+            Manifest.permission.POST_NOTIFICATIONS to findViewById(R.id.permission_post_notifications_status),
         )
         receiverStatusText = findViewById(R.id.receiver_status_text)
         buttonSwitchReceiverStatus = findViewById(R.id.button_switch_receiver_status)
@@ -104,6 +112,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             updateTelegramDataStatus()
+            updateNotificationStatus()
         }
 
         buttonShowTutorial.setOnClickListener {
@@ -164,11 +173,43 @@ class MainActivity : AppCompatActivity() {
             telegramDataAccessor.updateEnabledFlag(false)
         }
 
+        updateNotificationStatus()
+
         permissionStatus.forEach {(permission, status) ->
-            status.text = if (checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) TEXT_GRANTED else TEXT_DENIED
+            status.updateWithPermissionStatus(checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED)
         }
         updateTelegramDataStatus()
         updateBatteryOptimizationStatus()
+    }
+
+    private fun initializeNotificationChannel() {
+        val channel = NotificationChannel(NOTIFICATION_CHANNEL_ID, getString(R.string.notification_channel_name), NotificationManager.IMPORTANCE_DEFAULT)
+        channel.description = getString(R.string.notification_channel_description)
+        channel.setSound(null, null)
+        channel.enableVibration(false)
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
+    }
+
+    private fun updateNotificationStatus() {
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if (telegramDataAccessor.readTelegramData().enabled) {
+            val newIntent = Intent(this, MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            val pendingIntent = PendingIntent.getActivity(this, 0, newIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            val notification = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
+                .setSmallIcon(R.drawable.baseline_forward_to_inbox_24)
+                .setContentTitle(getString(R.string.notification_title))
+                .setContentText(getString(R.string.notification_text))
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pendingIntent)
+                .setOngoing(true)
+                .setAutoCancel(false)
+                .build()
+            notificationManager.notify(NOTIFICATION_ID, notification)
+        } else {
+            notificationManager.cancel(NOTIFICATION_ID)
+        }
     }
 
     private fun canEnable(): Boolean = areAllPermissionsGranted() && isBatteryOptimizationDisabled()
@@ -180,7 +221,7 @@ class MainActivity : AppCompatActivity() {
         val deniedPermissions = mutableListOf<String>()
         permissionStatus.forEach { (permission, status) ->
             if (checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
-                status.text = TEXT_GRANTED
+                status.updateWithPermissionStatus(true)
             } else {
                 deniedPermissions += permission
             }
@@ -192,7 +233,7 @@ class MainActivity : AppCompatActivity() {
         val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
             permissionStatus.forEach { (permission, status) ->
                 if (permissions.containsKey(permission)) {
-                    status.text = if (permissions.getOrDefault(permission, false)) TEXT_GRANTED else TEXT_DENIED
+                    status.updateWithPermissionStatus(permissions.getOrDefault(permission, false))
                 }
             }
             next()
@@ -204,7 +245,7 @@ class MainActivity : AppCompatActivity() {
     private fun checkBatteryOptimization() {
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
         if (powerManager.isIgnoringBatteryOptimizations(packageName)) {
-            batteryOptimizationStatus.text = TEXT_GRANTED
+            batteryOptimizationStatus.updateWithPermissionStatus(true)
             return
         }
         startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
@@ -213,7 +254,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateBatteryOptimizationStatus() {
-        batteryOptimizationStatus.text = if (isBatteryOptimizationDisabled()) TEXT_GRANTED else TEXT_DENIED
+        batteryOptimizationStatus.updateWithPermissionStatus(isBatteryOptimizationDisabled())
+    }
+
+    private fun permissionStatusText(permissionStatus: Boolean) =
+        if (permissionStatus) getString(R.string.permission_granted) else getString(R.string.permission_denied)
+
+    private fun permissionStatusColor(permissionStatus: Boolean): Int = getColor(
+        if (permissionStatus) R.color.permission_granted else R.color.permission_denied
+    )
+
+    private fun TextView.updateWithPermissionStatus(permissionStatus: Boolean) {
+        text = permissionStatusText(permissionStatus)
+        setTextColor(permissionStatusColor(permissionStatus))
     }
 
     private fun isBatteryOptimizationDisabled(): Boolean {
@@ -364,7 +417,7 @@ class MainActivity : AppCompatActivity() {
     private fun openAppSourceCode() = openLink("https://github.com/AlexTaran/sms2tg")
 
     private fun openReportProblem() = openLink("https://github.com/AlexTaran/sms2tg/issues")
-
+    
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.main_toolbar_menu, menu)
         if (menu is MenuBuilder) {
@@ -408,7 +461,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val TEXT_GRANTED = "granted"
-        private const val TEXT_DENIED = "denied"
+        private const val NOTIFICATION_CHANNEL_ID = "SMS2TG_NOTIFICATION_CHANNEL"
+        private const val NOTIFICATION_ID = 12345
     }
 }

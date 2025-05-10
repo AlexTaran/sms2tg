@@ -22,4 +22,13 @@ and copy Bot\'s secret key to a corresponding field.
 \n\nTo verify everything is set up correctly check that both \"Test\" buttons are sending something to your Telegram account via Bot.
 \n\nThis app\'s source code is published under open-source license, so you can verify it does not do anything else than described above.
     </string>
+
+    <string name="notification_channel_name">Status notification</string>
+    <string name="notification_channel_description">Forwarding status notification</string>
+
+    <string name="notification_title">SMS forwarding activated</string>
+    <string name="notification_text">Tap to configure</string>
+
+    <string name="permission_granted">granted</string>
+    <string name="permission_denied">denied</string>
 </resources>
