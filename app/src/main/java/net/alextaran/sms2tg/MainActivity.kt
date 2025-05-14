@@ -100,11 +100,13 @@ class MainActivity : AppCompatActivity() {
         buttonSwitchReceiverStatus.setOnClickListener {
             val desiredStatus = !telegramDataAccessor.readTelegramData().enabled
             if (desiredStatus) {
-                if (canEnable()) {
+                if (!canEnable()) {
+                    showErrorDialog(getString(R.string.not_enough_permissions_dialog_title), getString(R.string.not_enough_permissions_dialog_description))
+                } else if (!telegramDataAccessor.readTelegramData().isValid()) {
+                    showErrorDialog(getString(R.string.telegram_data_invalid_dialog_title), getString(R.string.telegram_data_invalid_dialog_description))
+                } else {
                     telegramDataAccessor.updateEnabledFlag(true)
                     showManageAppIfUnusedWarningDialog()
-                } else {
-                    showErrorDialog(getString(R.string.not_enough_permissions_dialog_title), getString(R.string.not_enough_permissions_dialog_description))
                 }
             } else {
                 // Always can disable
