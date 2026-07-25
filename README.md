@@ -19,11 +19,11 @@ Simply install this app on an unused or spare Android device, insert the SIM-car
 
 To get started, you need to connect the app to your own private Telegram bot and configure the Android system so it doesn't kill the app in the background.
 
-1. **Create a Bot:** Open Telegram, search for `@BotFather`, and send the `/newbot` command. Follow the instructions to get your **Bot Token** (Secret Key).
-2. **Get your User ID:** You need your personal numeric Telegram User ID so the bot knows who to forward messages to. You can get it by messaging a bot like `@userinfobot`.
-3. **Configure the App:** Open SMS2TG, paste both the **Bot Token** and your **User ID** into the corresponding fields.
+1. **Create a Bot:** Open [Telegram](https://www.telegram.org), search for [@BotFather](https://t.me/BotFather), and send the `/newbot` command. Follow the instructions to get your **Bot Token** (Secret Key).
+2. **Get your User ID:** You need your personal numeric Telegram User ID so the bot knows who to forward messages to. You can get it by messaging a bot like [@userinfobot](https://t.me/userinfobot).
+3. **Configure the App:** Open [SMS2TG](https://sms2tg.alextaran.net), paste both the **Bot Token** and your **User ID** into the corresponding fields.
 4. **Initiate the Chat:** ⚠️ *Crucial step!* Telegram bots cannot initiate conversations with users. You must open your newly created bot in Telegram and send it a `/start` message (or any text) first.
-5. **Test the Connection:** Use the "Test" buttons inside the SMS2TG app to verify that notifications are successfully reaching your Telegram account.
+5. **Test the Connection:** Use the "Test" buttons inside the app to verify that notifications are successfully reaching your Telegram account.
 6. **System Configuration (Very Important):** 
    * Grant all requested permissions (SMS receive, etc.) inside the app.
    * Go to your device's **Settings -> Apps -> SMS2TG**. 
