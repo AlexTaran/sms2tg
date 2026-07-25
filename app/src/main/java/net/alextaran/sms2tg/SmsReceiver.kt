@@ -67,37 +67,101 @@ class SmsReceiver : BroadcastReceiver() {
             ""
         }
 
-
-
         val messages = Telephony.Sms.Intents.getMessagesFromIntent(intent)
 
-        messages.forEach { smsMessage ->
-            var text = "*New SMS Received*\n\n"
-            text += "*Device*: ${Build.MANUFACTURER.escapeTgMarkdown()} ${Build.MODEL.escapeTgMarkdown()}\n"
-            text += "*SIM Slot Index:* ${simSlotIndex.toString().escapeTgMarkdown()}\n"
-            if (phoneNumber.isNotEmpty()) {
-                text += "*Phone:* ${phoneNumber.escapeTgMarkdown()}\n"
-            }
-            if (carrier.isNotEmpty()){
-                text += "*Carrier:* ${carrier.escapeTgMarkdown()}\n"
-            }
-            text += if (smsMessage.originatingAddress == smsMessage.displayOriginatingAddress) {
-                "*OriginatingAddress:* `${smsMessage.originatingAddress?.escapeTgMarkdown()}`\n"
-            } else {
-                "*OriginatingAddress:* `${smsMessage.originatingAddress?.escapeTgMarkdown()}`\n" +
-                "*DisplayOriginatingAddress:* `${smsMessage.displayOriginatingAddress?.escapeTgMarkdown()}`\n"
-            }
-            text += if (smsMessage.messageBody == smsMessage.displayMessageBody) {
-                "*MessageBody:* `${smsMessage.messageBody.escapeTgMarkdown()}`\n"
-            } else {
-                "*MessageBody:* `${smsMessage.messageBody.escapeTgMarkdown()}`\n" +
-                "*DisplayMessageBody:* `${smsMessage.displayMessageBody.escapeTgMarkdown()}`\n"
-            }
-            text += "*Time:* ${LocalDateTime.ofInstant(Instant.ofEpochMilli(smsMessage.timestampMillis), ZoneId.systemDefault()).toString().escapeTgMarkdown()}"
+        if (messages.isNullOrEmpty()) {
+            Log.i(TAG, "onReceive finished early - No messages in intent")
+            return
+        }
+
+        val firstSender = messages[0].originatingAddress
+        val allSameSender = messages.all { it.originatingAddress == firstSender }
+
+        if (allSameSender) {
+            // Building a single message from all fragments
+            val firstMessage = messages[0]
+            val fullMessageBody = messages.joinToString("") { it.messageBody ?: "" }
+            val fullDisplayMessageBody = messages.joinToString("") { it.displayMessageBody ?: "" }
+
+            val text = buildMessageText(
+                header = "*New SMS Received*",
+                simSlotIndex = simSlotIndex,
+                phoneNumber = phoneNumber,
+                carrier = carrier,
+                originatingAddress = firstMessage.originatingAddress,
+                displayOriginatingAddress = firstMessage.displayOriginatingAddress,
+                messageBody = fullMessageBody,
+                displayMessageBody = fullDisplayMessageBody,
+                timestampMillis = firstMessage.timestampMillis
+            )
+
             val workReq = SmsWorker.createWorkRequest(text)
-            Log.i(TAG, "enqueuing work request")
+            Log.i(TAG, "enqueuing combined work request")
             WorkManager.getInstance(context).enqueue(workReq)
+
+        } else {
+            // Fallback: sending as separate messages
+            Log.w(TAG, "Messages have different senders in one intent! Falling back to separate processing.")
+
+            messages.forEach { smsMessage ->
+                val text = buildMessageText(
+                    header = "*New SMS Received (Fragment)*",
+                    simSlotIndex = simSlotIndex,
+                    phoneNumber = phoneNumber,
+                    carrier = carrier,
+                    originatingAddress = smsMessage.originatingAddress,
+                    displayOriginatingAddress = smsMessage.displayOriginatingAddress,
+                    messageBody = smsMessage.messageBody,
+                    displayMessageBody = smsMessage.displayMessageBody,
+                    timestampMillis = smsMessage.timestampMillis
+                )
+
+                val workReq = SmsWorker.createWorkRequest(text)
+                Log.i(TAG, "enqueuing fragmented work request")
+                WorkManager.getInstance(context).enqueue(workReq)
+            }
         }
         Log.i(TAG, "onReceive finished")
+    }
+
+    private fun buildMessageText(
+        header: String,
+        simSlotIndex: Int,
+        phoneNumber: String,
+        carrier: String,
+        originatingAddress: String?,
+        displayOriginatingAddress: String?,
+        messageBody: String?,
+        displayMessageBody: String?,
+        timestampMillis: Long
+    ): String {
+        var text = "$header\n\n"
+        text += "*Device*: ${Build.MANUFACTURER.escapeTgMarkdown()} ${Build.MODEL.escapeTgMarkdown()}\n"
+        text += "*SIM Slot Index:* ${simSlotIndex.toString().escapeTgMarkdown()}\n"
+
+        if (phoneNumber.isNotEmpty()) {
+            text += "*Phone:* ${phoneNumber.escapeTgMarkdown()}\n"
+        }
+        if (carrier.isNotEmpty()) {
+            text += "*Carrier:* ${carrier.escapeTgMarkdown()}\n"
+        }
+
+        if (originatingAddress == displayOriginatingAddress) {
+            text += "*OriginatingAddress:* `${originatingAddress?.escapeTgMarkdown()}`\n"
+        } else {
+            text += "*OriginatingAddress:* `${originatingAddress?.escapeTgMarkdown()}`\n" +
+                    "*DisplayOriginatingAddress:* `${displayOriginatingAddress?.escapeTgMarkdown()}`\n"
+        }
+
+        if (messageBody == displayMessageBody) {
+            text += "*MessageBody:* `${messageBody?.escapeTgMarkdown()}`\n"
+        } else {
+            text += "*MessageBody:* `${messageBody?.escapeTgMarkdown()}`\n" +
+                    "*DisplayMessageBody:* `${displayMessageBody?.escapeTgMarkdown()}`\n"
+        }
+
+        text += "*Time:* ${LocalDateTime.ofInstant(Instant.ofEpochMilli(timestampMillis), ZoneId.systemDefault()).toString().escapeTgMarkdown()}"
+
+        return text
     }
 }
